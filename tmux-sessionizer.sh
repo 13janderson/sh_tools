@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 selected_name=$1
 
-custom_paths=("$HOME/vault/" "$HOME/dotfiles" "$HOME/dfiles")
+custom_paths=("$HOME/vault/" "$HOME/dotfiles" "$HOME/wl" "$HOME/tf")
 
 if [ -z $selected_name ]; then
   if [[ $# -eq 1 ]]; then
