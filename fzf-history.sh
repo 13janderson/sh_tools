@@ -6,8 +6,7 @@ TMP_FLAG=$(mktemp)
 # Change this for your shell, you may also need to change the below sed filtering to remove noise from history files
 # the below works for zsh_history
 HISTFILE=$HOME/.zsh_history
-selected=$(tac $HISTFILE | sed -E "/$me/d" | sed -E 's/(: [0-9]*:0;)(.*)/\2/' | awk '!seen[$0]++' | fzf -m --bind "ctrl-y:execute-silent(echo {} | wl-copy; echo y > $TMP_FLAG)+accept")
-echo "$selected"
+selected=$(tac $HISTFILE | sed -E "/$me/d" | sed -E 's/(: [0-9]*:0;)(.*)/\2/' | awk '!seen[$0]++' | fzf -m --bind "ctrl-y:execute-silent(echo {} | wl-copy; echo y > $TMP_FLAG)+accept" | paste -sd '&&' | sed -E 's/\&/ \&\& /')
 
 if [[ -f "$TMP_FLAG" ]]; then
   yanked=$(<"$TMP_FLAG")  
