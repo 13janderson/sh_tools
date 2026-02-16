@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 selected_name=$1
 
-custom_paths=("$HOME/vault/" "$HOME/dotfiles")
+custom_paths=("$HOME/vault/" "$HOME/dotfiles" )
 
 if [ -z $selected_name ]; then
   if [[ $# -eq 1 ]]; then
       selected=$1
   else
-    selected=$( (printf "%s\n" "${custom_paths[@]}"; find $HOME/projects  $HOME/projects/plugins/  -mindepth 1 -maxdepth 1 -type d -not -path '*/.*') | sed -E "s|$HOME/||" |   fzf --preview '')
+    selected=$( (printf "%s\n" "${custom_paths[@]}"; find $HOME/projects  $HOME/projects/plugins/  $HOME/projects/CVS -mindepth 1 -maxdepth 1 -type d -not -path '*/.*') | sed -E "s|$HOME/||" |   fzf --preview '')
   fi
 
   if [[ -z $selected ]]; then
