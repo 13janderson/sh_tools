@@ -22,14 +22,15 @@ if [ -z $selected_name ]; then
     # echo "directories: $directories"
     # echo "sessions: $sessions"
     existing=$(echo "$directories" | grep -wE "$sessions" | sed -E "s/(.*)/\1/")
-    # echo "existing: $existing"
-    # echo $(paste "$existing" "$times")
-    # echo "existing: $existing"
-    non_existing=$(echo "$directories" | grep -v "$existing")
+    if [[ -n $existing ]]; then
+      non_existing=$(echo "$directories" | grep -v "$existing")
 
-    existing_colour=$(echo "$existing" | sed -E $'s/(.*)/\e[1;92m\\1\e[0m/')
-    
-    selected=$(printf "$existing_colour\n$non_existing" | fzf --ansi --tmux 70%)
+      existing_colour=$(echo "$existing" | sed -E $'s/(.*)/\e[1;92m\\1\e[0m/')
+      
+      selected=$(printf "$existing_colour\n$non_existing" | fzf --ansi --tmux 70%)
+    else
+      selected=$(printf "$directories" | fzf --ansi --tmux 70%)
+    fi
   fi
 
   if [[ -z $selected ]]; then
