@@ -9,27 +9,22 @@ if [ -z $selected_name ]; then
   if [[ $# -eq 1 ]]; then
       selected=$1
   else
-    # mark active sessions with a *
-    sessions=$(tmux ls -F "#{session_activity}(#{session_name}" | sort -n | cut -d "(" -f 2) 
-    # echo "sessions: $sessions"
-    # times=$(echo "$sessions" | sed -E "s/(.*):(.*)/\1/" | xargs -I{} sh -c "echo $(($(date +%s) - $1)) | awk '{s=int($1/1000); d=int(s/86400); h=int((s%86400)/3600); m=int((s%3600)/60); printf \"%dd %dh %dm\n\", d,h,m}'" _ {})
-    # times=$(echo "$sessions" | sed -E 's/.*:(.*)/\1/' | \
-    #   awk -v now=$(date +%s) '{s=now-$1; d=int(s/86400); h=int((s%86400)/3600); m=int((s%3600)/60); printf "%dd %dh %dm\n", d,h,m}')
-    sessions=$(echo "$sessions" | sed -E "s/(.*):(.*)/\2/")
-    # echo "times: $times"
     directories=$(printf "%s\n" "${custom_paths[@]}"; find $HOME/projects $HOME/projects/plugins/ $HOME/projects/CVS -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2> /dev/null)
     directories=$(echo "$directories" | sed -E "s|$HOME/||" | sed 's|/*$||')
-    # echo "directories: $directories"
-    # echo "sessions: $sessions"
-    existing=$(echo "$directories" | grep -wE "$sessions" | sed -E "s/(.*)/\1/")
-    # echo "existing: $existing"
-    # echo $(paste "$existing" "$times")
-    # echo "existing: $existing"
-    non_existing=$(echo "$directories" | grep -v "$existing")
 
-    existing_colour=$(echo "$existing" | sed -E $'s/(.*)/\e[1;92m\\1\e[0m/')
-    
-    selected=$(printf "$existing_colour\n$non_existing" | fzf --ansi --tmux 70%)
+    sessions=""
+    # mark active sessions with a *
+    if [[ -n $TMUX ]] && [[ -n $tmux_running ]]; then
+      sessions=$(tmux ls -F "#{session_activity}(#{session_name}" | sort -n | cut -d "(" -f 2 | sed -E "s/(.*):(.*)/\2/") 
+      existing=$(echo "$directories" | grep -wE "$sessions" | sed -E "s/(.*)/\1/")
+      non_existing=$(echo "$directories" | grep -v "$existing")
+
+      existing_colour=$(echo "$existing" | sed -E $'s/(.*)/\e[1;92m\\1\e[0m/')
+      selected=$(printf "$existing_colour\n$non_existing" | fzf --ansi --tmux 70%)
+    else
+      selected=$(printf "$directories" | fzf)
+    fi
+
   fi
 
   if [[ -z $selected ]]; then
