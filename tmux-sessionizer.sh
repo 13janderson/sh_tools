@@ -9,7 +9,7 @@ if [ -z $selected_name ]; then
   if [[ $# -eq 1 ]]; then
       selected=$1
   else
-    sessions=$(tmux ls -F "#{session_activity}(#{session_name}" | sort -n | cut -d "(" -f 2) 
+    sessions=$(tmux ls -F "#{session_activity}(#{session_name}" | sort -n | cut -d "(" -f 2 2> /dev/null) 
     sessions=$(echo "$sessions" | sed -E "s/(.*):(.*)/\2/")
     directories=$(printf "%s\n" "${custom_paths[@]}"; find $HOME/projects $HOME/projects/plugins/ $HOME/projects/CVS -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2> /dev/null)
     directories=$(echo "$directories" | sed -E "s|$HOME/||" | sed 's|/*$||')
