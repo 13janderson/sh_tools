@@ -3,24 +3,34 @@ selected_name=$1
 
 custom_paths=("$HOME/vault/" "$HOME/dotfiles" )
 
-# When showing tmux sesions, I want them organised by latest first
 if [ -z $selected_name ]; then
   if [[ $# -eq 1 ]]; then
       selected=$1
   else
     sessions=$(tmux ls -F "#{session_activity}(#{session_name}" | sort -n | cut -d "(" -f 2 2> /dev/null) 
     sessions=$(echo "$sessions" | sed -E "s/(.*):(.*)/\2/")
+
     directories=$(printf "%s\n" "${custom_paths[@]}"; find $HOME/projects $HOME/projects/plugins/ $HOME/projects/CVS -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2> /dev/null)
 
     # tmuxify all directories 
     directories=$(echo "$directories" | xargs -I {} sh -c "echo {} | tr . _" | sed -E "s|$HOME/||" | sed 's|/*$||')
-    existing=$(echo "$directories" | grep -wE "$sessions" | sed -E "s/(.*)/\1/")
+    existing=$(echo "$directories" | grep -wEx "$sessions" | sed -E "s/(.*)/\1/")
     if [[ -n $existing ]]; then
       non_existing=$(echo "$directories" | grep -v "$existing")
 
       existing_colour=$(echo "$existing" | sed -E $'s/(.*)/\e[1;92m\\1\e[0m/')
-      
-      selected=$(printf "$existing_colour\n$non_existing" | tr _ . | fzf --ansi --tmux 70%)
+
+      # Allow multiple selections when sessions plural already exist
+      selected=$(printf "$existing_colour\n$non_existing" | tr _ . | fzf -m --ansi --tmux 70%)
+
+      # Assume that the use case for this is selecting multiple sessions for deletion. Thus assume
+      # that when multiple sessions are selected, then the intention is to delete those sessions
+      count=$(echo "$selected" | wc -l)
+      if [[ count -gt 1 ]]; then
+        printf "\e[0;32myes\n\e[0;31mno" | fzf --no-sort --layout=reverse --ansi --height=40% --prompt "Delete $count sessions?" | grep -x 'yes' && \
+          # printf "Deleting sessions: $(echo "$selected" | tr '\n' ' ')\n" && echo "$selected" | xargs -I {} sh -c "echo $(basename "{}" | tr . _ ) && tmux kill-session -t $(basename "{}" | tr . _) >> xargs.log"
+          printf "Deleting sessions: $(echo "$selected" | tr '\n' ' ')\n" && echo "$selected" | xargs -I {} sh -c 'tmux kill-session -t "$(basename "{}" | tr . _ )"'
+      fi
     else
       selected=$(printf "$directories" | tr . _ | fzf --ansi -tmux 70%)
     fi
