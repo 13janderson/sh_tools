@@ -17,17 +17,15 @@ if [ -z $selected_name ]; then
     existing=$(echo "$directories" | grep -wE "$sessions" | sed -E "s/(.*)/\1/")
     if [[ -n $existing ]]; then
       non_existing=$(echo "$directories" | grep -v "$existing")
-      echo "non_existing: $non_existing"
 
       existing_colour=$(echo "$existing" | sed -E $'s/(.*)/\e[1;92m\\1\e[0m/')
       
       selected=$(printf "$existing_colour\n$non_existing" | tr _ . | fzf --ansi --tmux 70%)
     else
-      selected=$(printf "$directories" | tr . _ | fzf --ansi --tmux 70%)
+      selected=$(printf "$directories" | tr . _ | fzf --ansi -tmux 70%)
     fi
   fi
 
-  echo "selected: $selected"
   if [[ -z $selected ]]; then
       exit 0
   fi
