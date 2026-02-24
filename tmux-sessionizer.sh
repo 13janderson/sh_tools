@@ -13,7 +13,7 @@ if [ -z $selected_name ]; then
     directories=$(printf "%s\n" "${custom_paths[@]}"; find $HOME/projects $HOME/projects/plugins/ $HOME/projects/CVS -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2> /dev/null)
 
     # tmuxify all directories 
-    directories=$(echo "$directories" | xargs -I {} sh -c "basename {} | tr . _" | sed -E "s|$HOME/||" | sed 's|/*$||')
+    directories=$(echo "$directories" | xargs -I {} sh -c "echo {} | tr . _" | sed -E "s|$HOME/||" | sed 's|/*$||')
     existing=$(echo "$directories" | grep -wE "$sessions" | sed -E "s/(.*)/\1/")
     if [[ -n $existing ]]; then
       non_existing=$(echo "$directories" | grep -v "$existing")
@@ -21,9 +21,9 @@ if [ -z $selected_name ]; then
 
       existing_colour=$(echo "$existing" | sed -E $'s/(.*)/\e[1;92m\\1\e[0m/')
       
-      selected=$(printf "$existing_colour\n$non_existing" | fzf --ansi --tmux 70%)
+      selected=$(printf "$existing_colour\n$non_existing" | tr _ . | fzf --ansi --tmux 70%)
     else
-      selected=$(printf "$directories" | fzf --ansi --tmux 70%)
+      selected=$(printf "$directories" | tr . _ | fzf --ansi --tmux 70%)
     fi
   fi
 
