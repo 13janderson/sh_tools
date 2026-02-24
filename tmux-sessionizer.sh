@@ -3,7 +3,6 @@ selected_name=$1
 
 custom_paths=("$HOME/vault/" "$HOME/dotfiles" )
 
-
 # When showing tmux sesions, I want them organised by latest first
 if [ -z $selected_name ]; then
   if [[ $# -eq 1 ]]; then
@@ -12,10 +11,13 @@ if [ -z $selected_name ]; then
     sessions=$(tmux ls -F "#{session_activity}(#{session_name}" | sort -n | cut -d "(" -f 2 2> /dev/null) 
     sessions=$(echo "$sessions" | sed -E "s/(.*):(.*)/\2/")
     directories=$(printf "%s\n" "${custom_paths[@]}"; find $HOME/projects $HOME/projects/plugins/ $HOME/projects/CVS -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2> /dev/null)
-    directories=$(echo "$directories" | sed -E "s|$HOME/||" | sed 's|/*$||')
+
+    # tmuxify all directories 
+    directories=$(echo "$directories" | xargs -I {} sh -c "basename {} | tr . _" | sed -E "s|$HOME/||" | sed 's|/*$||')
     existing=$(echo "$directories" | grep -wE "$sessions" | sed -E "s/(.*)/\1/")
     if [[ -n $existing ]]; then
       non_existing=$(echo "$directories" | grep -v "$existing")
+      echo "non_existing: $non_existing"
 
       existing_colour=$(echo "$existing" | sed -E $'s/(.*)/\e[1;92m\\1\e[0m/')
       
@@ -25,6 +27,7 @@ if [ -z $selected_name ]; then
     fi
   fi
 
+  echo "selected: $selected"
   if [[ -z $selected ]]; then
       exit 0
   fi
