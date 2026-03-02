@@ -14,7 +14,8 @@ if [ -z $selected_name ]; then
 
     # tmuxify all directories 
     directories=$(echo "$directories" | xargs -I {} sh -c "echo {} | tr . _" | sed -E "s|$HOME/||" | sed 's|/*$||')
-    existing=$(echo "$directories" | grep -wEx "$sessions" | sed -E "s/(.*)/\1/")
+
+    existing=$(echo "$directories" | grep -wE "$sessions" | sed -E "s/(.*)/\1/")
     if [[ -n $existing ]]; then
       non_existing=$(echo "$directories" | grep -v "$existing")
 
@@ -32,7 +33,7 @@ if [ -z $selected_name ]; then
           printf "Deleting sessions: $(echo "$selected" | tr '\n' ' ')\n" && echo "$selected" | xargs -I {} sh -c 'tmux kill-session -t "$(basename "{}" | tr . _ )"'
       fi
     else
-      selected=$(printf "$directories" | tr . _ | fzf --ansi -tmux 70%)
+      selected=$(printf "$directories" | tr . _ | fzf --ansi --tmux 70%)
     fi
   fi
 
