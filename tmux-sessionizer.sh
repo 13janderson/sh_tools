@@ -44,13 +44,13 @@ tmux_running=$(pgrep tmux)
 if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
     pth="$HOME/$selected"
 
-    tmux new-session -s "$selected_name" -c "$pth" "nvim"
+    tmux new-session -s "$selected_name" -c "$pth"
     exit 0
 fi
 
 if ! tmux has-session -t="$selected_name" 2> /dev/null; then
     pth="$HOME/$selected"
-    tmux new-session -ds "$selected_name" -c "$pth" "nvim"
+    tmux new-session -ds "$selected_name" -c "$pth"
 fi
 
 if [[ -z $TMUX ]]; then
