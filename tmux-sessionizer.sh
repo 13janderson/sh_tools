@@ -4,7 +4,7 @@ selected=$1
 custom_paths=("$HOME/vault/" "$HOME/dotfiles" )
 
 if [ -z "$selected" ]; then
-  sessions=$(tmux ls -F "#{session_activity}(#{session_name}" | sort -n | cut -d "(" -f 2 2> /dev/null)
+  sessions=$(tmux ls -F "#{session_activity}(#{session_name}" 2> /dev/null | sort -n | cut -d "(" -f 2)
   sessions=$(echo "$sessions" | sed -E "s/(.*):(.*)/\2/")
 
   directories=$(printf "%s\n" "${custom_paths[@]}"; find "$HOME/projects" "$HOME/projects/plugins/" "$HOME/projects/CVS" -mindepth 1 -maxdepth 1 -type d -not -path '*/.*' 2> /dev/null)
@@ -15,6 +15,7 @@ if [ -z "$selected" ]; then
   # Pre-compute session paths and basename counts to avoid O(n²) subshells
   declare -A session_paths basename_counts
   while IFS= read -r s; do
+    [[ -z "$s" ]] && continue
     session_paths["$s"]=$(tmux display-message -p -t "$s" '#{pane_current_path}' 2> /dev/null)
   done <<< "$sessions"
   while IFS= read -r dir; do
@@ -64,16 +65,8 @@ fi
 
 # Session name uses underscores instead of dots (tmux session naming restriction)
 selected_name=$(basename "$selected" | tr . _)
-tmux_running=$(pgrep -x tmux)
 
-if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
-    pth="$HOME/$selected"
-
-    tmux new-session -s "$selected_name" -c "$pth"
-    exit 0
-fi
-
-if ! tmux has-session -t="$selected_name" 2> /dev/null; then
+if ! tmux has-session -t "$selected_name" 2> /dev/null; then
     pth="$HOME/$selected"
     tmux new-session -ds "$selected_name" -c "$pth"
 fi
